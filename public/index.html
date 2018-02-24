@@ -1,0 +1,148 @@
+<html>
+
+<head>
+    <script src="https://code.jquery.com/jquery.js"></script>
+
+    <style>
+    .redfont{
+        color:red;
+    }
+    body {
+        background-color: tan;
+    }
+
+    h1 {
+        font-family: "Comic Sans MS", cursive, sans-serif;
+        text-align: center;
+    }
+
+    button {
+        background-color: white;
+        color: black;
+        border: 2px solid gray;
+        font-size: 24px;
+        font-family: "Comic Sans MS";
+        border-radius:8px;
+        text-align: center;
+    }
+
+    input {
+        position: relative;
+
+
+    }
+
+    </style>
+</head>
+
+<body>
+    <h1>Eat Burger</h1>
+    <button id="button1">Submit</button>
+    <button id="postBtn">Post</button>
+
+    <input id="name" type="text" placeholder="name">
+    <input id="pin" type="password" maxlength="4" placeholder="****">
+    <input id="topping" type="text" placeholder="toping">
+
+    <p>
+        <input id="searchTerm" type="text" placeholder="search term">
+        <button id="searchBtn">Search</button>
+    </p>
+
+    <div id="div1">
+
+    </div>
+
+    <script>
+
+
+        function loadAll(){
+            $("#div1").empty();
+            $.ajax({
+                url: "/api/all",
+                type: 'GET'
+            }).then(function (data) {
+                console.log(data)
+                for (var i = 0, n = data.length; i < n; i++) {
+                    if (data[i].isComplete == true){
+                        var text = `<span class="redfont">name: ${data[i].name} topping: ${data[i].topping} <button class= "eatBtn" data-id="${data[i].id}">eat</button></span>`
+                    }
+                    else{
+                        var text = `<span>name: ${data[i].name} topping: ${data[i].topping} <button class= "eatBtn" data-id="${data[i].id}">eat</button></span>`
+                    }   
+                    
+
+                    $("#div1").append(text)
+                }
+            })
+        }
+        $("#button1").on("click", function () {
+            console.log(`button1 working`)
+            loadAll()
+
+        })
+
+        $(document).on("click",".eatBtn",function(){
+           console.log($(this).attr("data-id"))
+           var targetId = $(this).attr(`data-id`)
+           var data = {
+               id:targetId,
+               isComplete:true
+           }
+
+           $.ajax({
+               
+                url: `/update/${targetId}`,
+                type: 'PUT',
+                data: data
+            }).then(function (data) {
+                console.log(data)
+                loadAll()
+            })
+       })
+
+        $("#postBtn").on("click", function () {
+
+            var data = {
+                name: $("#name").val(),
+                pin: $("#pin").val(),
+                topping: $("#topping").val(),
+                isComplete: false
+            };
+            console.log(`posting data is ${data}`)
+
+            $.ajax({
+                url: "/post",
+                type: 'POST',
+                data: data
+            }).then(function (data) {
+                console.log(data)
+            })
+        })
+
+        $("#searchBtn").on("click", function () {
+            $("#div1").empty();
+
+            var searchTerm = $("#searchTerm").val();
+            $.ajax({
+                url: `/api/${searchTerm}`,
+                type: 'GET'
+            }).then(function (data) {
+                console.log(data)
+                for (var i = 0, n = data.length; i < n; i++) {
+                    var text = `<p> name: ${data[i].name} topping: ${data[i].topping}</p>`
+                    $("#div1").append(text)
+                }
+            })
+
+
+            })
+
+        
+
+
+    </script>
+
+</body>
+
+</html>
